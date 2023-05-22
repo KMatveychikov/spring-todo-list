@@ -6,7 +6,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class CompleteTodoRequest {
-    private int taskNumber;
     private int todoId;
 
 }

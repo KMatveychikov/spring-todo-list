@@ -1,6 +1,7 @@
 package matvey.springtodolist.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,6 +22,7 @@ public class User implements UserDetails {
     private String _id;
     private String username;
     private String email;
+    @JsonIgnore
     private String password;
     private Role role;
 

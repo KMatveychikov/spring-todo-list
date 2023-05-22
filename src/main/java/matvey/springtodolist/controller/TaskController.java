@@ -1,20 +1,14 @@
 package matvey.springtodolist.controller;
 
 import lombok.RequiredArgsConstructor;
-import matvey.springtodolist.dto.AddCoUserResponse;
-import matvey.springtodolist.dto.AddCommentRequest;
-import matvey.springtodolist.dto.UserResponse;
 import matvey.springtodolist.dto.task.AddTaskRequest;
-import matvey.springtodolist.dto.todo.AddTodoRequest;
-import matvey.springtodolist.dto.todo.CompleteTodoRequest;
-import matvey.springtodolist.dto.todo.DeleteTodoRequest;
-import matvey.springtodolist.dto.todo.EditTodoRequest;
 import matvey.springtodolist.model.Task;
 import matvey.springtodolist.service.TaskService;
-import matvey.springtodolist.service.TodoService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/v1/task")
@@ -22,51 +16,40 @@ import java.util.List;
 public class TaskController {
 
     private final TaskService taskService;
-    private final TodoService todoService;
 
     @PostMapping("/add_task")
-    public void addTask(@RequestBody AddTaskRequest addTaskRequest) {
-        taskService.addTask(addTaskRequest);
+    public ResponseEntity<Task> addTask(@RequestBody AddTaskRequest request) {
+        return ResponseEntity.ok(taskService.addTask(request));
     }
 
-    @GetMapping("/get_task_by_email/{email}")
-    public List<Task> getTasksByUser(@PathVariable String email) {
-        return taskService.getAllTasksByUser(email);
+    @PutMapping("/complete")
+    public ResponseEntity<Task> completeTask(@RequestParam String taskId) {
+        return ResponseEntity.ok(taskService.completeTask(taskId));
     }
 
-    @GetMapping("/get_task_by_number/{taskNumber}")
-    public Task getTaskByNumber(@PathVariable int taskNumber) {
-        return taskService.getTaskByNumber(taskNumber);
+    @GetMapping("/all_tasks")
+    public ResponseEntity<?> getAllTasks() {
+        return ResponseEntity.ok(taskService.getAllTasks());
     }
 
     @PostMapping("/add_todo")
-    public void addTodo(@RequestBody AddTodoRequest addTodoRequest) {
-        todoService.addTodo(addTodoRequest);
+    public ResponseEntity<Task> addTodo(@RequestParam String taskId, @RequestParam String text) {
+        return ResponseEntity.ok(taskService.addTodo(taskId, text));
+    }
+
+    @PostMapping("/complete_todo")
+    public ResponseEntity<Task> completeTodo(@RequestParam String taskId, @RequestParam String todoId) {
+        return ResponseEntity.ok(taskService.completeTodo(taskId, todoId));
     }
 
     @PostMapping("/add_comment")
-    public void addComment(@RequestBody AddCommentRequest addCommentRequest) {
-        taskService.addComment(addCommentRequest);
+    public ResponseEntity<Task> addComment(String taskId, String text) {
+        return ResponseEntity.ok(taskService.addComment(taskId, text));
     }
 
-    @PostMapping("/add_couser")
-    public void addCoUserToTask(@RequestBody AddCoUserResponse addCoUserResponse) {
-        taskService.addCoUser(addCoUserResponse);
-    }
-
-    @DeleteMapping("/delete_todo")
-    public void deleteTodo(@RequestBody DeleteTodoRequest deleteTodoRequest) {
-        todoService.deleteTodo(deleteTodoRequest);
-    }
-
-    @PutMapping("/complete_todo")
-    public void completeTodo(@RequestBody CompleteTodoRequest completeTodoRequest) {
-        todoService.completeTodo(completeTodoRequest);
-    }
-
-    @PutMapping("/edit_todo")
-    public void editTodo(@RequestBody EditTodoRequest editTodoRequest) {
-        todoService.editTodo(editTodoRequest);
+    @PostMapping("/add_file")
+    public ResponseEntity<Task> addFile(@RequestParam String taskId,@RequestParam MultipartFile file) throws IOException {
+        return ResponseEntity.ok(taskService.addFile(taskId, file));
     }
 
 }

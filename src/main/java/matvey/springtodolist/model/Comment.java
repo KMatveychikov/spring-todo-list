@@ -8,7 +8,7 @@ import matvey.springtodolist.dto.UserResponse;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Comment {
-    private int taskNumber;
-    private UserResponse author;
+    private String id;
+    private String authorName;
     private String text;
 }

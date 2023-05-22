@@ -10,4 +10,5 @@ public class AddTaskRequest {
 
     String title;
     String text;
+    String resposibleUserId;
 }

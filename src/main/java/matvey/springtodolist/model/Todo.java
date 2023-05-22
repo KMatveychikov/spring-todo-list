@@ -10,9 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Todo {
-    private int taskNumber;
-    private int todoId;
-    private String title;
+    private String todoId;
     private String text;
     private boolean isCompleted;
 
