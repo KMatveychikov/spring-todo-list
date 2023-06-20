@@ -4,8 +4,9 @@ import lombok.RequiredArgsConstructor;
 import matvey.springtodolist.dto.auth.AuthRequest;
 import matvey.springtodolist.dto.auth.AuthResponse;
 import matvey.springtodolist.dto.auth.RegisterRequest;
-import matvey.springtodolist.dto.UserResponse;
+import matvey.springtodolist.dto.auth.UserResponse;
 import matvey.springtodolist.service.AuthService;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,16 +27,22 @@ public class AuthController {
         return ResponseEntity.ok(service.register(request));
     }
 
+
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> authenticate(
             @RequestBody AuthRequest request
-    ) {
+    )  {
         return ResponseEntity.ok(service.authenticate(request));
     }
 
     @GetMapping("/get_all")
-    public List<UserResponse> getAllUsers(){
-       return service.getAllUsers();
+    public List<UserResponse> getAllUsers() {
+        return service.getAllUsers();
+    }
+
+    @GetMapping("get_name_by_id/{id}")
+    public ResponseEntity<String> getUsernameById(@PathVariable String id) throws ChangeSetPersister.NotFoundException {
+        return ResponseEntity.ok(service.getUsernameById(id));
     }
 
 }

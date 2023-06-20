@@ -1,0 +1,14 @@
+.loginForm {
+    margin-right: 50%;
+    margin-left: 40%;
+    margin-top: 50px;
+    width: 300px;
+    height: 200px;
+    background-color: lightgrey;
+}
+
+.login__items {
+    margin-top: 10px;
+    margin-right: 50%;
+    margin-left: 20%;
+}

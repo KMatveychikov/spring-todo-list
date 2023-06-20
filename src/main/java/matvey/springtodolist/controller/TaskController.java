@@ -4,10 +4,13 @@ import lombok.RequiredArgsConstructor;
 import matvey.springtodolist.dto.task.AddTaskRequest;
 import matvey.springtodolist.model.Task;
 import matvey.springtodolist.service.TaskService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 
 @RestController
@@ -18,7 +21,7 @@ public class TaskController {
     private final TaskService taskService;
 
     @PostMapping("/add_task")
-    public ResponseEntity<Task> addTask(@RequestBody AddTaskRequest request) {
+    public ResponseEntity<Task> addTask(@RequestBody AddTaskRequest request) throws IOException {
         return ResponseEntity.ok(taskService.addTask(request));
     }
 
@@ -48,8 +51,13 @@ public class TaskController {
     }
 
     @PostMapping("/add_file")
-    public ResponseEntity<Task> addFile(@RequestParam String taskId,@RequestParam MultipartFile file) throws IOException {
+    public ResponseEntity<Task> addFile(@RequestParam String taskId, @RequestParam MultipartFile file) throws IOException {
         return ResponseEntity.ok(taskService.addFile(taskId, file));
+    }
+
+    @GetMapping("/get_file/{taskId}/{fileName}")
+    public ResponseEntity<?> getFile(@PathVariable String taskId, @PathVariable String fileName) throws IOException {
+        return taskService.getFile(taskId,fileName);
     }
 
 }

@@ -1,7 +1,6 @@
 package matvey.springtodolist.model;
 
 import lombok.*;
-import matvey.springtodolist.dto.UserResponse;
 
 @Data
 @Builder

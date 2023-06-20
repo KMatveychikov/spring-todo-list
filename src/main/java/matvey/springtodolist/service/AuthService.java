@@ -1,16 +1,19 @@
 package matvey.springtodolist.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import matvey.springtodolist.dto.auth.AuthRequest;
 import matvey.springtodolist.dto.auth.AuthResponse;
 import matvey.springtodolist.dto.auth.RegisterRequest;
-import matvey.springtodolist.dto.UserResponse;
+import matvey.springtodolist.dto.auth.UserResponse;
 import matvey.springtodolist.model.User;
 import matvey.springtodolist.repository.UserRepository;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +23,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -74,11 +78,20 @@ public class AuthService {
 
     public UserResponse convertUserToResponse(User user) {
         return UserResponse.builder()
+                .id(user.get_id())
                 .email(user.getEmail())
                 .role(user.getRole())
                 .name(user.getName()).build();
     }
     public UserResponse getUserResponseByEmail(String email) {
       return convertUserToResponse(userRepository.findByEmail(email).orElseThrow()) ;
+    }
+
+    public String getUsernameById(String id) throws ChangeSetPersister.NotFoundException {
+        User user = userRepository.findById(id).orElseThrow(() -> {
+            log.warn("User {} not found", id);
+            return new ChangeSetPersister.NotFoundException();
+        });
+        return user.getName();
     }
 }

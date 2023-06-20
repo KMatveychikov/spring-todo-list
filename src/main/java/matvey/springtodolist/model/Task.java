@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.nio.file.Path;
 import java.util.List;
 
 @Data
@@ -18,9 +16,10 @@ public class Task {
    private String text;
    private List<Todo> todos;
    private List<Comment> comments;
-   private List<Path> files;
+   private List<FileInfo> files;
    private String ownerUserId;
    private String responsibleUserId;
+   private String boardId;
    private List<String> performerUsersId;
    private boolean isCompleted;
 
