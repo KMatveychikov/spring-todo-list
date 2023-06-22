@@ -6,6 +6,7 @@ import matvey.springtodolist.dto.auth.AuthRequest;
 import matvey.springtodolist.dto.auth.AuthResponse;
 import matvey.springtodolist.dto.auth.RegisterRequest;
 import matvey.springtodolist.dto.auth.UserResponse;
+import matvey.springtodolist.model.Board;
 import matvey.springtodolist.model.User;
 import matvey.springtodolist.repository.UserRepository;
 import org.springframework.data.crossstore.ChangeSetPersister;
@@ -29,6 +30,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+
 
     public AuthResponse register(RegisterRequest request) {
         var user = User.builder()
@@ -69,6 +71,13 @@ public class AuthService {
         return userRepository.findByEmail(getCurrentUserEmail()).orElseThrow();
     }
 
+    public String getCurrentUserId() {
+        return getCurrentUser().get_id();
+    }
+    public String getCurrentUserName(){
+        return getCurrentUser().getUsername();
+    }
+
     public List<UserResponse> getAllUsers() {
         List<User> users = userRepository.findAll();
         List<UserResponse> userResponses = new ArrayList<>();
@@ -83,9 +92,6 @@ public class AuthService {
                 .role(user.getRole())
                 .name(user.getName()).build();
     }
-    public UserResponse getUserResponseByEmail(String email) {
-      return convertUserToResponse(userRepository.findByEmail(email).orElseThrow()) ;
-    }
 
     public String getUsernameById(String id) throws ChangeSetPersister.NotFoundException {
         User user = userRepository.findById(id).orElseThrow(() -> {
@@ -93,5 +99,12 @@ public class AuthService {
             return new ChangeSetPersister.NotFoundException();
         });
         return user.getName();
+    }
+    public boolean isPresentUser(String userId){
+        if(userRepository.existsById(userId)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

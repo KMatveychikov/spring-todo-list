@@ -14,12 +14,10 @@ public class Task {
    private String _id;
    private String title;
    private String text;
-   private List<Todo> todos;
    private List<Comment> comments;
    private List<FileInfo> files;
    private String ownerUserId;
    private String responsibleUserId;
-   private String boardId;
    private List<String> performerUsersId;
    private boolean isCompleted;
 
