@@ -1,18 +1,14 @@
 package matvey.springtodolist.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Board {
-    private String _id;
-    private String title;
-    private List<String> tasksId;
+public class Todo {
+    private String id;
+    private String text;
+    private boolean isCompleted;
 }

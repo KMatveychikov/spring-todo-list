@@ -3,9 +3,7 @@ package matvey.springtodolist.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import matvey.springtodolist.dto.task.AddTaskRequest;
-import matvey.springtodolist.model.Comment;
-import matvey.springtodolist.model.FileInfo;
-import matvey.springtodolist.model.Task;
+import matvey.springtodolist.model.*;
 import matvey.springtodolist.repository.FileInfoRepository;
 import matvey.springtodolist.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +16,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -35,10 +35,13 @@ public class TaskService {
                 .title(request.getTitle())
                 .text(request.getText())
                 .responsibleUserId(request.getResponsibleUserId())
-                .performerUsersId(new ArrayList<>())
                 .ownerUserId(authService.getCurrentUserId())
+                .performerUsersId(new ArrayList<>())
                 .comments(new ArrayList<>())
                 .files(new ArrayList<>())
+                .todos(new ArrayList<>())
+                .tags(new ArrayList<>())
+                .deadline(request.getDeadline())
                 .isCompleted(false)
                 .build();
         taskRepository.save(task);
@@ -58,11 +61,73 @@ public class TaskService {
         });
     }
 
+    public Task editText(String taskId, String text) {
+        Task task = getTaskById(taskId);
+        task.setText(text);
+        return updateTask(task);
+    }
+
+    public Task addTag(String taskId, String title, String color) {
+        Task task = getTaskById(taskId);
+        List<Tag> tags = task.getTags();
+        tags.add(new Tag(UUID.randomUUID().toString(),title, color));
+        task.setTags(tags);
+        return updateTask(task);
+    }
+
+
+    public Task removeTag(String taskId, String id) {
+        Task task = getTaskById(taskId);
+        List<Tag> tags = task.getTags();
+        Tag tag = tags.stream().filter(tag1 -> Objects.equals(tag1.getId(), id)).findFirst().orElseThrow(()-> {
+            log.error("tag {} not found", id);
+            throw new RuntimeException("tag not found");
+        });
+        tags.remove(tag);
+        task.setTags(tags);
+        return updateTask(task);
+    }
+
+    public Task addTodo(String taskId, String text) {
+        Task task = getTaskById(taskId);
+        List<Todo> todos = task.getTodos();
+        todos.add(new Todo(UUID.randomUUID().toString(), text, false));
+        task.setTodos(todos);
+        return updateTask(task);
+    }
+
+    public Todo getTodoById(String taskId, String todoId) {
+        Task task = getTaskById(taskId);
+        List<Todo> todos = task.getTodos();
+        return todos.stream().filter(todo -> todo.getId() == todoId).findFirst().orElseThrow(()-> {
+            log.error("todo {} not found", todoId);
+            throw new RuntimeException("todo not found");
+        });
+    }
+
+    public Task completeTodo(String taskId, String todoId) {
+        Task task = getTaskById(taskId);
+        List<Todo> todos = task.getTodos();
+        Todo todo = getTodoById(taskId, todoId);
+        int index = todos.indexOf(todo);
+        todo.setCompleted(!todo.isCompleted());
+        todos.set(index, todo);
+        task.setTodos(todos);
+        return updateTask(task);
+    }
+
+    public Task completeTask(String taskId) {
+        Task task = getTaskById(taskId);
+        task.setCompleted(!task.isCompleted());
+        updateTask(task);
+        return task;
+    }
 
 
     public Task addComment(String taskId, String text) {
         Task task = getTaskById(taskId);
         Comment comment = Comment.builder()
+                .id(UUID.randomUUID().toString())
                 .text(text)
                 .authorName(authService.getCurrentUserName())
                 .build();
@@ -87,6 +152,14 @@ public class TaskService {
         }
     }
 
+    public Task removePerformerUser(String taskId, String userId) {
+        Task task = getTaskById(taskId);
+        List<String> performerUsers = task.getPerformerUsersId();
+        performerUsers.remove(userId);
+        task.setPerformerUsersId(performerUsers);
+        return updateTask(task);
+    }
+
 
     public FileInfo addFileToTask(MultipartFile file, String taskId) throws IOException {
         Task task = getTaskById(taskId);
@@ -97,14 +170,14 @@ public class TaskService {
             log.error(e.toString());
             throw new IOException(e.toString());
         }
-        List<FileInfo> files = task.getFiles();
+        List<String> files = task.getFiles();
         FileInfo fileInfo = FileInfo.builder()
                 .fileName(file.getOriginalFilename())
                 .contentType(file.getContentType())
                 .filePath(path)
                 .build();
         fileInfoRepository.save(fileInfo);
-        files.add(fileInfo);
+        files.add(fileInfo.getId());
         task.setFiles(files);
         updateTask(task);
 
@@ -112,7 +185,7 @@ public class TaskService {
     }
 
     public void addDefaultTaskDirectory(String taskId) throws IOException {
-        Files.createDirectory(Path.of(path_to_files+taskId));
+        Files.createDirectory(Path.of(path_to_files + taskId));
     }
 
 }

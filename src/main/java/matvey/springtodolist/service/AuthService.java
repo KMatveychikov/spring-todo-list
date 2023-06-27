@@ -5,20 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import matvey.springtodolist.dto.auth.AuthRequest;
 import matvey.springtodolist.dto.auth.AuthResponse;
 import matvey.springtodolist.dto.auth.RegisterRequest;
-import matvey.springtodolist.dto.auth.UserResponse;
-import matvey.springtodolist.model.Board;
 import matvey.springtodolist.model.User;
 import matvey.springtodolist.repository.UserRepository;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -33,14 +28,14 @@ public class AuthService {
 
 
     public AuthResponse register(RegisterRequest request) {
-        var user = User.builder()
+        User user = User.builder()
                 .email(request.getEmail())
                 .username(request.getName())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
                 .build();
         userRepository.save(user);
-        var jwtToken = jwtService.generateToken(user);
+        String jwtToken = jwtService.generateToken(user);
         return AuthResponse.builder()
                 .token(jwtToken)
                 .build();
@@ -53,13 +48,28 @@ public class AuthService {
                         request.getPassword()
                 )
         );
-        var user = userRepository.findByEmail(request.getEmail())
+        User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow();
-        var jwtToken = jwtService.generateToken(user);
+        String jwtToken = jwtService.generateToken(user);
         return AuthResponse.builder()
                 .token(jwtToken)
-                .user(convertUserToResponse(user))
+                .user(user)
                 .build();
+    }
+    public User getUserById(String userId){
+        return userRepository.findById(userId).orElseThrow(() -> {
+            log.error("user {} not found", userId);
+            throw new RuntimeException("user not found");
+        });
+    }
+
+    public User addBoard(String userId, String boardId) {
+        User user = getUserById(userId);
+        List<String> boardsId = user.getBoardsId();
+        boardsId.add(boardId);
+        user.setBoardsId(boardsId);
+        userRepository.save(user);
+        return user;
     }
 
     public String getCurrentUserEmail() {
@@ -68,7 +78,10 @@ public class AuthService {
     }
 
     public User getCurrentUser() {
-        return userRepository.findByEmail(getCurrentUserEmail()).orElseThrow();
+        return userRepository.findByEmail(getCurrentUserEmail()).orElseThrow(() -> {
+            log.error("user not found");
+            throw new RuntimeException("user not found");
+        });
     }
 
     public String getCurrentUserId() {
@@ -78,25 +91,14 @@ public class AuthService {
         return getCurrentUser().getUsername();
     }
 
-    public List<UserResponse> getAllUsers() {
-        List<User> users = userRepository.findAll();
-        List<UserResponse> userResponses = new ArrayList<>();
-        users.forEach(u -> userResponses.add(convertUserToResponse(u)));
-        return userResponses;
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 
-    public UserResponse convertUserToResponse(User user) {
-        return UserResponse.builder()
-                .id(user.get_id())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .name(user.getName()).build();
-    }
-
-    public String getUsernameById(String id) throws ChangeSetPersister.NotFoundException {
+    public String getUsernameById(String id) throws RuntimeException {
         User user = userRepository.findById(id).orElseThrow(() -> {
-            log.warn("User {} not found", id);
-            return new ChangeSetPersister.NotFoundException();
+            log.error("User {} not found", id);
+            return new RuntimeException("user not found");
         });
         return user.getName();
     }

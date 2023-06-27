@@ -6,5 +6,5 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
 public interface BoardRepository extends MongoRepository<Board, String> {
-    List<Board> getBoardsByUserId(String userId);
+    //List<Board> getBoardsByUserId(String userId);
 }

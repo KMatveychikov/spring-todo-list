@@ -4,7 +4,8 @@ import lombok.RequiredArgsConstructor;
 import matvey.springtodolist.dto.auth.AuthRequest;
 import matvey.springtodolist.dto.auth.AuthResponse;
 import matvey.springtodolist.dto.auth.RegisterRequest;
-import matvey.springtodolist.dto.auth.UserResponse;
+
+import matvey.springtodolist.model.User;
 import matvey.springtodolist.service.AuthService;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +37,7 @@ public class AuthController {
     }
 
     @GetMapping("/get_all")
-    public List<UserResponse> getAllUsers() {
+    public List<User> getAllUsers() {
         return service.getAllUsers();
     }
 
