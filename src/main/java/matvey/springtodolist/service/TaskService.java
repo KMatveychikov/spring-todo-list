@@ -2,11 +2,12 @@ package matvey.springtodolist.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import matvey.springtodolist.dto.task.AddTaskRequest;
+
 import matvey.springtodolist.model.*;
-import matvey.springtodolist.repository.FileInfoRepository;
 import matvey.springtodolist.repository.TaskRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,32 +21,46 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class TaskService {
     private final TaskRepository taskRepository;
-    private final FileInfoRepository fileInfoRepository;
     private final AuthService authService;
+    private final BoardService boardService;
+
+   public TaskService (@Lazy BoardService boardService , TaskRepository taskRepository, AuthService authService) {
+       this.boardService = boardService;
+       this.taskRepository = taskRepository;
+       this.authService = authService;
+   }
 
     @Value("${path_to_files}")
     private String path_to_files;
 
-    public Task addTask(AddTaskRequest request) throws IOException {
+    public Task addTask(String title) throws IOException {
         Task task = Task.builder()
-                .title(request.getTitle())
-                .text(request.getText())
-                .responsibleUserId(request.getResponsibleUserId())
+                .title(title)
+                .text("")
                 .ownerUserId(authService.getCurrentUserId())
                 .performerUsersId(new ArrayList<>())
                 .comments(new ArrayList<>())
                 .files(new ArrayList<>())
                 .todos(new ArrayList<>())
                 .tags(new ArrayList<>())
-                .deadline(request.getDeadline())
                 .isCompleted(false)
                 .build();
         taskRepository.save(task);
         addDefaultTaskDirectory(task.get_id());
+        return task;
+    }
+
+    public List<Task> getAllTasks(){
+        return taskRepository.findAll();
+    }
+
+    public Task setResponsibleUser(String taskId, String responsibleUserId){
+        Task task = getTaskById(taskId);
+        task.setResponsibleUserId(responsibleUserId);
+        taskRepository.save(task);
         return task;
     }
 
@@ -70,7 +85,7 @@ public class TaskService {
     public Task addTag(String taskId, String title, String color) {
         Task task = getTaskById(taskId);
         List<Tag> tags = task.getTags();
-        tags.add(new Tag(UUID.randomUUID().toString(),title, color));
+        tags.add(new Tag(UUID.randomUUID().toString(), title, color));
         task.setTags(tags);
         return updateTask(task);
     }
@@ -79,7 +94,7 @@ public class TaskService {
     public Task removeTag(String taskId, String id) {
         Task task = getTaskById(taskId);
         List<Tag> tags = task.getTags();
-        Tag tag = tags.stream().filter(tag1 -> Objects.equals(tag1.getId(), id)).findFirst().orElseThrow(()-> {
+        Tag tag = tags.stream().filter(tag1 -> Objects.equals(tag1.getId(), id)).findFirst().orElseThrow(() -> {
             log.error("tag {} not found", id);
             throw new RuntimeException("tag not found");
         });
@@ -99,7 +114,7 @@ public class TaskService {
     public Todo getTodoById(String taskId, String todoId) {
         Task task = getTaskById(taskId);
         List<Todo> todos = task.getTodos();
-        return todos.stream().filter(todo -> todo.getId() == todoId).findFirst().orElseThrow(()-> {
+        return todos.stream().filter(todo -> todo.getId() == todoId).findFirst().orElseThrow(() -> {
             log.error("todo {} not found", todoId);
             throw new RuntimeException("todo not found");
         });
@@ -145,7 +160,6 @@ public class TaskService {
             performerUsers.add(performerUserId);
             task.setPerformerUsersId(performerUsers);
             return updateTask(task);
-
         } else {
             log.error("user {} not found", performerUserId);
             throw new RuntimeException("user  not found");
@@ -170,14 +184,13 @@ public class TaskService {
             log.error(e.toString());
             throw new IOException(e.toString());
         }
-        List<String> files = task.getFiles();
+        List<FileInfo> files = task.getFiles();
         FileInfo fileInfo = FileInfo.builder()
                 .fileName(file.getOriginalFilename())
                 .contentType(file.getContentType())
                 .filePath(path)
                 .build();
-        fileInfoRepository.save(fileInfo);
-        files.add(fileInfo.getId());
+        files.add(fileInfo);
         task.setFiles(files);
         updateTask(task);
 

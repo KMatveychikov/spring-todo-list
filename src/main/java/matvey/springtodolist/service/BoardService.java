@@ -1,15 +1,16 @@
 package matvey.springtodolist.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import matvey.springtodolist.dto.task.AddTaskRequest;
+
 import matvey.springtodolist.model.Board;
 import matvey.springtodolist.model.Task;
+import matvey.springtodolist.model.User;
 import matvey.springtodolist.repository.BoardRepository;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Objects;
 
 
 @Service
@@ -30,9 +31,9 @@ public class BoardService {
         return board;
     }
 
-    public Board addTaskToBoard(AddTaskRequest request) throws IOException {
-        Board board = getBoardById(request.getBoardId());
-        Task task = taskService.addTask(request);
+    public Board addTaskToBoard(String boardId, String title) throws IOException {
+        Board board = getBoardById(boardId);
+        Task task = taskService.addTask(title);
         List<String> tasksId = board.getTasksId();
         if (taskService.getTaskById(task.get_id()) != null) {
             tasksId.add(task.get_id());
@@ -43,6 +44,21 @@ public class BoardService {
             log.error("task {} not found", task.get_id());
             throw new RuntimeException("task not found");
         }
+    }
+
+    public Board addTaskToDefaultBoard(String userId, String taskId){
+        User user = authService.getUserById(userId);
+        Board board = user.getBoardsId().stream().map(this::getBoardById).filter(b -> Objects.equals(b.getTitle(), "default")).findFirst().orElseThrow(()->{
+            log.error("Board not found");
+            throw new RuntimeException("Board not found");
+        });
+        List<String> tasks = board.getTasksId();
+        if(taskService.getTaskById(taskId) != null){
+            tasks.add(taskId);
+            board.setTasksId(tasks);
+            boardRepository.save(board);
+        }
+        return board;
     }
 
     public List<Task> getTasksFromBoard(String boardId){

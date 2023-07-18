@@ -1,7 +1,7 @@
 package matvey.springtodolist.controller;
 
 import lombok.RequiredArgsConstructor;
-import matvey.springtodolist.dto.task.AddTaskRequest;
+
 import matvey.springtodolist.model.Board;
 import matvey.springtodolist.model.Task;
 import matvey.springtodolist.service.AuthService;
@@ -19,9 +19,9 @@ public class BoardController {
     private final BoardService boardService;
     private final AuthService authService;
 
-    @PostMapping("/add_task")
-    public ResponseEntity<Board> addTaskToBoard(AddTaskRequest addTaskRequest) throws IOException {
-        return ResponseEntity.ok(boardService.addTaskToBoard(addTaskRequest));
+    @PostMapping("/{boardId}/add_task")
+    public ResponseEntity<Board> addTaskToBoard(@PathVariable String boardId, @RequestParam String title) throws IOException {
+        return ResponseEntity.ok(boardService.addTaskToBoard(boardId, title));
     }
 
     @PostMapping("/add")

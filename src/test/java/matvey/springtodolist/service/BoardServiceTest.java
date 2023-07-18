@@ -1,23 +1,20 @@
 package matvey.springtodolist.service;
 
-import matvey.springtodolist.dto.task.AddTaskRequest;
+
 import matvey.springtodolist.model.Board;
 import matvey.springtodolist.model.Role;
 import matvey.springtodolist.model.Task;
 import matvey.springtodolist.model.User;
 import matvey.springtodolist.repository.BoardRepository;
-import matvey.springtodolist.repository.TaskRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -54,7 +51,7 @@ class BoardServiceTest {
             List.of(board.get_id()));
 
 
-    AddTaskRequest addTaskRequest = new AddTaskRequest("testTask", "text", LocalDateTime.now(), "1", "1");
+
 
 
 
@@ -77,10 +74,10 @@ class BoardServiceTest {
     void testAddTaskToBoard() throws IOException {
         when(authService.getCurrentUser()).thenReturn(user);
         when(boardRepository.findById(anyString())).thenReturn(Optional.of(board));
-        when(taskService.addTask(addTaskRequest)).thenReturn(task);
+        when(taskService.addTask("testTask")).thenReturn(task);
         when(taskService.getTaskById(anyString())).thenReturn(task);
 
-        Board testBoard = boardService.addTaskToBoard(addTaskRequest);
+        Board testBoard = boardService.addTaskToBoard("1","testTask");
         assertEquals(board.getTasksId().get(0), testBoard.getTasksId().get(0));
     }
 

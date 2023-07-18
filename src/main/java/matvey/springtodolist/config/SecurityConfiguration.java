@@ -26,9 +26,9 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf().disable()
                 .cors().configurationSource(corsConfigurationSource)
                 .and()
+                .csrf().disable()
                 .authorizeHttpRequests()
 //                .requestMatchers("/api/v1/auth/**").permitAll()
 //                .requestMatchers("/api/v1/**").hasAuthority("_ADMIN")
@@ -50,6 +50,7 @@ public class SecurityConfiguration {
     CorsConfigurationSource corsConfigurationSource = request -> {
         CorsConfiguration config = new CorsConfiguration();
         config.addAllowedOriginPattern("*");
+        config.setAllowedOriginPatterns(List.of("*"));
         config.setAllowedMethods(Collections.singletonList("*"));
         config.setAllowCredentials(true);
         config.setAllowedHeaders(Collections.singletonList("*"));

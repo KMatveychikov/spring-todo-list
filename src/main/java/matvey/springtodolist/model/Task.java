@@ -17,7 +17,7 @@ public class Task {
    private String title;
    private String text;
    private List<Comment> comments;
-   private List<String> files;
+   private List<FileInfo> files;
    private String ownerUserId;
    private String responsibleUserId;
    private List<String> performerUsersId;

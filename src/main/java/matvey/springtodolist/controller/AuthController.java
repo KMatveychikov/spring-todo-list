@@ -8,6 +8,7 @@ import matvey.springtodolist.dto.auth.RegisterRequest;
 import matvey.springtodolist.model.User;
 import matvey.springtodolist.service.AuthService;
 import org.springframework.data.crossstore.ChangeSetPersister;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,7 +34,8 @@ public class AuthController {
     public ResponseEntity<AuthResponse> authenticate(
             @RequestBody AuthRequest request
     )  {
-        return ResponseEntity.ok(service.authenticate(request));
+        return ResponseEntity.ok()
+                .body(service.authenticate(request));
     }
 
     @GetMapping("/get_all")

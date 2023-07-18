@@ -16,6 +16,10 @@ import java.io.IOException;
 public class TaskController {
     private final TaskService taskService;
 
+    @GetMapping("/{taskId}/get")
+    public ResponseEntity<Task> getTaskById(@PathVariable String taskId) {
+        return ResponseEntity.ok(taskService.getTaskById(taskId));
+    }
 
     @PostMapping("/{taskId}/add_comment")
     public ResponseEntity<Task> addComment(@PathVariable String taskId,

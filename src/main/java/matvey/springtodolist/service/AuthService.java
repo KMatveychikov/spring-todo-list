@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import matvey.springtodolist.dto.auth.AuthRequest;
 import matvey.springtodolist.dto.auth.AuthResponse;
 import matvey.springtodolist.dto.auth.RegisterRequest;
+import matvey.springtodolist.model.Board;
 import matvey.springtodolist.model.User;
+import matvey.springtodolist.repository.BoardRepository;
 import matvey.springtodolist.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -25,19 +28,29 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final BoardRepository boardRepository;
+
 
 
     public AuthResponse register(RegisterRequest request) {
+        Board board = Board.builder()
+                .title("Default")
+                .tasksId(new ArrayList<>())
+                .build();
+        boardRepository.save(board);
         User user = User.builder()
                 .email(request.getEmail())
                 .username(request.getName())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
+                .boardsId(new ArrayList<>(List.of(board.get_id())))
                 .build();
         userRepository.save(user);
+
         String jwtToken = jwtService.generateToken(user);
         return AuthResponse.builder()
                 .token(jwtToken)
+                .user(user)
                 .build();
     }
 

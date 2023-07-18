@@ -1,8 +1,8 @@
 package matvey.springtodolist.service;
 
-import matvey.springtodolist.dto.task.AddTaskRequest;
+
 import matvey.springtodolist.model.*;
-import matvey.springtodolist.repository.FileInfoRepository;
+
 import matvey.springtodolist.repository.TaskRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,17 +21,23 @@ import static org.mockito.Mockito.when;
 
 class TaskServiceTest {
     TaskRepository taskRepository = mock(TaskRepository.class);
-    FileInfoRepository fileInfoRepository = mock(FileInfoRepository.class);
+
     AuthService authService = mock(AuthService.class);
 
     TaskService taskService = new TaskService(
             taskRepository,
-            fileInfoRepository,
             authService);
 
     String exampleText = "LoremIpsum";
 
     Todo todo = new Todo(UUID.randomUUID().toString(), exampleText, false);
+
+    User user = new User("1",
+            "testUser",
+            "testUser@example.com",
+            "12345",
+            Role._USER,
+            List.of());
 
     Task task = new Task("1",
             "testTask",
@@ -46,17 +52,7 @@ class TaskServiceTest {
             new ArrayList(List.of(todo)),
             false);
 
-    AddTaskRequest addTaskRequest = new AddTaskRequest("testTask",
-            "text",
-            LocalDateTime.now(),
-            "1",
-            "1");
-    User user = new User("1",
-            "testUser",
-            "testUser@example.com",
-            "12345",
-            Role._USER,
-            List.of());
+
 
     @BeforeEach
     void setUp() {
@@ -69,11 +65,10 @@ class TaskServiceTest {
 
     @Test
     void testAddTask() throws IOException {
-        Task testTask = taskService.addTask(addTaskRequest);
+        Task testTask = taskService.addTask("testTask");
 
-        assertEquals(addTaskRequest.getTitle(), testTask.getTitle());
-        assertEquals(addTaskRequest.getText(), testTask.getText());
-        assertEquals(addTaskRequest.getResponsibleUserId(), testTask.getResponsibleUserId());
+        assertEquals("testTask", testTask.getTitle());
+
 
     }
 
@@ -183,11 +178,34 @@ class TaskServiceTest {
     }
 
     @Test
-    void addPerformerUser() {
+    void testAddPerformerUser() {
+        when(taskRepository.findById(anyString())).thenReturn(Optional.of(task));
+        when(authService.isPresentUser(anyString())).thenReturn(true);
+
+        taskService.addPerformerUser(task.get_id(), user.get_id());
+
+        assertEquals(task.getPerformerUsersId().get(0), user.get_id());
     }
 
     @Test
     void removePerformerUser() {
+        Task task2 = new Task("2",
+                "testTask",
+                "text",
+                new ArrayList<>(),
+                new ArrayList<>(),
+                "1",
+                "1",
+                new ArrayList<String>(List.of(user.get_id())),
+                LocalDateTime.now(),
+                new ArrayList<>(),
+                new ArrayList<Todo>(List.of(todo)),
+                false);
+        when(taskRepository.findById(anyString())).thenReturn(Optional.of(task2));
+
+        taskService.removePerformerUser(task2.get_id(), user.get_id());
+
+        assertFalse(task2.getPerformerUsersId().contains(user.get_id()));
     }
 
     @Test
